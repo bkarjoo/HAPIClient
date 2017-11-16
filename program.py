@@ -162,7 +162,7 @@ def sell(cmd):
         elif values[3].upper() == 'MOC':
             if len(values) == 5:
                 acct = values[4]
-            o = generate_moc_market_order(values[1], values[2], acct)
+            o = generate_moc_market_order(qty, values[2], acct)
         elif values[3].upper() == 'VWAP':
             if values[5] == '*':
                 price = float(values[4])
@@ -178,11 +178,11 @@ def sell(cmd):
         elif values[4].upper() == 'LOO':
             if len(values) == 6:
                 acct = values[5]
-            o = generate_opg_limit_order(qty, value[2], value[3], acct)
+            o = generate_opg_limit_order(qty, values[2], values[3], acct)
         elif values[4].upper() == 'LOC':
             if len(values) == 6:
                 acct = values[5]
-            o = generate_loc_limit_order(values[1], values[2], values[3], acct)
+            o = generate_loc_limit_order(qty, values[2], values[3], acct)
         elif values[4].upper() == 'DAY':
             if len(values) == 6:
                 acct = values[5]
@@ -196,8 +196,8 @@ def sell(cmd):
         hydra_order_message = add_length(hydra_order_message)
         es_sock.sendall(hydra_order_message)
         # print hydra_order_message
-    except:
-        print 'error encountered in sell function'
+    except Exception as e:
+        print e
 
 
 def buy(command):
@@ -265,6 +265,7 @@ def submit():
 
 
 def process_row(row):
+
     if (len(row) > 0):
         strategy = str(row[0])
         symbol = ''

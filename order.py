@@ -152,7 +152,7 @@ def generate_limit_order(qty, symbol, price, acct):
     o.algo_fields = '4A,,,,,'
     o.security_type = '8'
     o.security_id = symbol
-    o.reserve_size = 100
+    o.reserve_size = ''
     if qty > 0:
         o.side = side_type.buy
     elif qty < 0:
@@ -196,7 +196,7 @@ def generate_moc_market_order(qty, symbol, acct):
     o.algo_fields = '9,,,,,'
     o.security_type = '8'
     o.security_id = symbol
-    o.reserve_size = 100
+    o.reserve_size = ''
     if qty > 0:
         o.side = side_type.buy
     elif qty < 0:
@@ -218,7 +218,7 @@ def generate_opg_limit_order(qty, symbol, price, acct):
     o.algo_fields = '9,,,,,'
     o.security_type = '8'
     o.security_id = symbol
-    o.reserve_size = 100
+    o.reserve_size = ''
     o.order_price = price
     if qty > 0:
         o.side = side_type.buy
@@ -241,7 +241,7 @@ def generate_loc_limit_order(qty, symbol, price, acct):
     o.algo_fields = '9,,,,,'
     o.security_type = '8'
     o.security_id = symbol
-    o.reserve_size = 100
+    o.reserve_size = ''
     o.order_price = price
     if qty > 0:
         o.side = side_type.buy
@@ -264,7 +264,7 @@ def generate_nite_vwap_order(qty, symbol, start_time, end_time, stop_price, acct
     o.set_nite_vwap(start_time, end_time, stop_price)
     o.security_type = '8'
     o.security_id = symbol
-    o.reserve_size = 100
+    o.reserve_size = ''
     o.channel_of_execution = 'NITE'
     if qty > 0:
         o.side = side_type.buy
@@ -289,7 +289,7 @@ def generate_stop_limit_order(qty, symbol, stop_price, stop_limit, acct):
     o.algo_fields = '9,,,,,'
     o.security_type = '8'
     o.security_id = symbol
-    o.reserve_size = 100
+    o.reserve_size = ''
     if qty > 0:
         o.side = side_type.buy
     elif qty < 0:
@@ -312,7 +312,7 @@ def generate_stop_market_order(qty, symbol, stop_price, acct):
     o.algo_fields = '9,,,,,'
     o.security_type = '8'
     o.security_id = symbol
-    o.reserve_size = 100
+    o.reserve_size = ''
     if qty > 0:
         o.side = side_type.buy
     elif qty < 0:
