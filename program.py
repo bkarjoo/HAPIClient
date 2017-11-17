@@ -4,6 +4,7 @@ import Queue
 import time
 from order import *
 from google_api import *
+from excel_quotes import *
 
 quit_program = False
 es_sock = 0
@@ -158,7 +159,7 @@ def sell(cmd):
         if values[3].upper() == 'MOO':
             if len(values) == 5:
                 acct = values[4]
-            o = generate_opg_market_order(qty, value[2], acct)
+            o = generate_opg_market_order(qty, values[2], acct)
         elif values[3].upper() == 'MOC':
             if len(values) == 5:
                 acct = values[4]
@@ -319,6 +320,22 @@ def process_row(row):
                     # print hydra_order_message
                 else:
                     pass
+            elif note.strip() == 'Enter (MOO)':
+                prompt = 'How many shares of {0} do you have in {1}?'.format(
+                    symbol, account
+                )
+                qty = raw_input(prompt)
+                qty = int(qty)
+                o = generate_opg_market_order(qty,symbol,account)
+                prompt = 'Should I {0} {1} {2} moo (y/n)?'.format('buy', abs(qty), symbol)
+                user_input = raw_input(prompt)
+                if user_input == 'y':
+                    hydra_order_message = o.craft_message()
+                    hydra_order_message = add_length(hydra_order_message)
+                    es_sock.sendall(hydra_order_message)
+                    # print hydra_order_message
+                else:
+                    pass
         else:
             print('strategy: {0}, {1}, {2}, {3}, {4}, {5}'.format(strategy, symbol, side, bp_share, note, account))
 
@@ -327,6 +344,52 @@ def process_sheet():
     sheet = get_sheet()
     for row in sheet:
         process_row(row)
+
+
+def quote(command):
+    # sends a request to start a quote subscription
+    # kill command will then kill a quote if it exists
+    # e.g. quote SPY
+    tokens = command.split(' ')
+    symbol = tokens[1].strip()
+    message = '#:00000:1:000:{0}:A:*'.format(symbol)
+    message = add_length(message)
+    is_sock.sendall(message)
+
+
+def closing_bracket_orders():
+    acct = 'ALGOGROUP'
+    dollars_per_trade = 20000
+    build_quote_dictionary()
+    offset_percentage = .015
+    try:
+        for key, l in quote_dictionary.iteritems():
+            bid = l[0]
+            ask = l[1]
+            bid_offset = bid * offset_percentage
+            ask_offset = ask * offset_percentage
+            if .50 > bid_offset: bid_offset = .50
+            if .50 > ask_offset: ask_offset = .50
+            buy_level = round(bid - bid_offset,2)
+            sell_level = round(ask + ask_offset,2)
+            buy_shares = int(round(dollars_per_trade / buy_level,0))
+            sell_shares = int(round(dollars_per_trade/sell_level,0)) * -1
+
+            buy_order = generate_loc_limit_order(buy_shares,key,buy_level,acct)
+            hydra_order_message = buy_order.craft_message()
+            hydra_order_message = add_length(hydra_order_message)
+            print hydra_order_message
+            #es_sock.sendall(hydra_order_message)
+
+            sell_order = generate_loc_limit_order(sell_shares,key,sell_level,acct)
+            hydra_order_message = sell_order.craft_message()
+            hydra_order_message = add_length(hydra_order_message)
+            print hydra_order_message
+            #es_sock.sendall(hydra_order_message)
+            break
+    except Exception as e:
+        print e
+
 
 
 def interactive():
@@ -363,6 +426,12 @@ def interactive():
 
                 if command == 'pimc':
                     print is_msg_count
+
+                if command == 'quote':
+                    quote(command)
+
+                if command == 'closing bracket orders':
+                    closing_bracket_orders()
 
             except:
                 print 'error in interactive'
