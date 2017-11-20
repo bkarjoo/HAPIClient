@@ -46,18 +46,31 @@ class display_mode:
     lit = 'Y'
 
 
-class algo_types:
+class algo_type:
     twap = '5'
     vwap = '6'
 
 
+class msg_status_type:
+    pending = 'P'
+    open = 'O'
+    canceled = 'C'
+    rejected = 'R'
+    executed = 'E'
+
+
+class order_status_type:
+    submitting = 0
+    acknowledged = 1 # acknowledged by hydra, but not the exchange
+    open = 2
+    canceled = 3
+    rejected = 4
+    partial_open = 5
+    partial_canceled = 6
+    executed = 7
+
+
 class order(object):
-    """
-    represents an order with all its fields
-
-    """
-
-
     def __init__(self):
         self.account = ''
         self.parrent_id = ''
@@ -81,24 +94,16 @@ class order(object):
         self.security_id = ''
         self.is_submitted = False
         self.cancel_submitted = False
+        self.executed_quantity = 0
+        self.status = order_status_type.submitting
+        self.error = ''
+        self.leaves_qty = 0
 
     def __str__(self):
         return self.craft_message()
 
     def set_nite_vwap(self, start_time, end_time, stop_price):
         self.algo_fields = "4,{0},{1},,,{2},N,N,100,,,N,N,0".format(start_time,end_time,stop_price)
-
-    def submit(self):
-        global ES
-        if not self.is_submitted:
-            self.is_submitted = True
-            ES.SendMessage(self.craft_message())
-
-    def cancel(self):
-        global ES
-        if not self.cancel_submitted:
-            self.cancel_submitted = True
-            ES.SendMessage(self.craft_cancel_message())
 
     def craft_message(self):
         return "#:00000:N:000:{0}:{1}:{2}:N:{3}:{4}:{5}:{6}:{7}:{8}:{9}::{10}::{11}:{18}:{13}:{12}:{14}:{15}:{16}:{17}::::*".format(
@@ -113,6 +118,43 @@ class order(object):
             self.account, self.parrent_id, self.order_id, self.symbol, self.side,
             self.quantity, self.order_price, self.contra, self.channel_of_execution,
             self.tif, self.type, self.display)
+
+    def update_order(self, tokens):
+        if tokens[2] != 'S':
+            raise Exception('invalid message type {0} sent to order.update_order'.format(tokens[2]))
+        if tokens[4] == 'S':
+            # ignore if status is pending
+            if tokens[14] == msg_status_type.pending:
+                self.status = order_status_type.acknowledged
+
+            elif tokens[14] == msg_status_type.executed:
+                # can be partial or full
+                self.executed_quantity += int(tokens[10])
+                self.leaves_qty = int(tokens[20])
+                if self.leaves_qty == 0:
+                    self.status = order_status_type.executed
+                else:
+                    self.status = order_status_type.partial_open
+            elif tokens[14] == msg_status_type.open:
+                # can be unfilled order or partial
+                self.leaves_qty = int(tokens[20])
+                if self.leaves_qty != self.quantity:
+                    self.status = order_status_type.partial_open
+            elif tokens[14] == msg_status_type.rejected:
+                # you want to note the error
+                self.status = order_status_type.rejected
+                self.error = tokens[15]
+            elif tokens[14] == msg_status_type.canceled:
+                # this can be a partial order canceled so there's filled portion and canceled
+                if self.leaves_qty == self.quantity:
+                    self.status = order_status_type.canceled
+                else:
+                    self.status = order_status_type.partial_canceled
+        elif tokens[4] == 'F':
+            # this is an acknowledgment order, so can be ignored
+            pass
+        else:
+            raise Exception('message type S {0} not implemented'.format(tokens[4]))
 
 
 def generate_order_id():
