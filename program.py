@@ -345,10 +345,13 @@ def buy(command):
                 acct = values[7]
             o = generate_stop_limit_order(values[1], values[2], values[3], values[5], acct)
 
+        orders_by_parent[o.parrent_id] = o
+
         hydra_order_message = o.craft_message()
         hydra_order_message = add_length(hydra_order_message)
+
         es_sock.sendall(hydra_order_message)
-        # print hydra_order_message
+        print hydra_order_message
     except:
         print 'error encountered in buy function'
 
@@ -360,7 +363,8 @@ def submit():
 
 
 def process_row(row):
-
+    print row
+    return
     if (len(row) > 0):
         strategy = str(row[0])
         symbol = ''
@@ -500,6 +504,25 @@ def closing_bracket_orders():
         print e
 
 
+def print_orders():
+    print orders_by_id
+    print orders_by_parent
+
+
+def print_order_status():
+    for key, value in orders_by_id.iteritems():
+        print value.status
+
+
+def cancel_all_orders():
+    for key, value in orders_by_id.iteritems():
+        if value.status == order_status_type.open or value.status == order_status_type.partial_open:
+            cancel_msg = value.craft_cancel_message()
+            cancel_msg = add_length(cancel_msg)
+            print cancel_msg
+            es_sock.sendall(cancel_msg)
+
+
 def interactive():
         while True:
             try:
@@ -509,43 +532,52 @@ def interactive():
                     quit()
                     return
 
-                if command[:4] == 'sell':
+                elif command[:4] == 'sell':
                     sell(command)
 
-                if command[:3] == 'buy':
+                elif command[:3] == 'buy':
                     buy(command)
 
-                if command == 'submit':
+                elif command == 'submit':
                     submit()
 
-                if command == 'sheet':
+                elif command == 'sheet':
                     process_sheet()
 
-                if command == 'pem':
+                elif command == 'pem':
                     for m in es_msg_store:
                         print m
 
-                if command == 'pim':
+                elif command == 'pim':
                     for m in is_msg_store:
                         print m
 
-                if command == 'pemc':
+                elif command == 'pemc':
                     print es_msg_count
 
-                if command == 'pimc':
+                elif command == 'pimc':
                     print is_msg_count
 
-                if command[:11] == 'start quote':
+                elif command[:11] == 'start quote':
                     start_quote(command)
 
-                if command[:10] == 'stop quote':
+                elif command[:10] == 'stop quote':
                     stop_quote(command)
 
-                if command == 'closing bracket orders':
+                elif command == 'closing bracket orders':
                     closing_bracket_orders()
 
-                if command[:11] == 'print quote':
+                elif command[:11] == 'print quote':
                     print_quote(command)
+
+                elif command == 'print orders':
+                    print_orders()
+
+                elif command == 'print status':
+                    print_order_status()
+
+                elif command == 'cancel all orders':
+                    cancel_all_orders()
 
             except:
                 print 'error in interactive'

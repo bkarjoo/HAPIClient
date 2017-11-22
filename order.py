@@ -3,8 +3,8 @@ import datetime
 # single object which sends orders and cancels orders
 # by submitting the proper message to the exchange
 
-global time_stamp
 time_stamp = ''
+order_number = 1000000
 
 
 class tif_type:
@@ -98,6 +98,8 @@ class order(object):
         self.status = order_status_type.submitting
         self.error = ''
         self.leaves_qty = 0
+        self.strategy = '' # order can have a strategy name
+        self.strategy_code = '00' # 2 character code allows for many concurrent strategies
 
     def __str__(self):
         return self.craft_message()
@@ -114,7 +116,7 @@ class order(object):
             self.security_id, self.stop_limit_price)
 
     def craft_cancel_message(self):
-        return "#:00000:C:000:{0}:{1}:{2}:N:{3}:{4}:{5}:{6}:{7}:{8}:{9}::{10}::{11}::::::::::::::*".format(
+        return "#:00000:N:000:{0}::{2}:C:{3}:{4}:{5}:{6}::{8}:{9}::{10}::{11}:*".format(
             self.account, self.parrent_id, self.order_id, self.symbol, self.side,
             self.quantity, self.order_price, self.contra, self.channel_of_execution,
             self.tif, self.type, self.display)
@@ -125,6 +127,7 @@ class order(object):
         if tokens[4] == 'S':
             # ignore if status is pending
             if tokens[14] == msg_status_type.pending:
+                print 'changing status to acknowledged'
                 self.status = order_status_type.acknowledged
 
             elif tokens[14] == msg_status_type.executed:
@@ -140,6 +143,8 @@ class order(object):
                 self.leaves_qty = int(tokens[20])
                 if self.leaves_qty != self.quantity:
                     self.status = order_status_type.partial_open
+                else:
+                    self.status = order_status_type.open
             elif tokens[14] == msg_status_type.rejected:
                 # you want to note the error
                 self.status = order_status_type.rejected
@@ -157,26 +162,19 @@ class order(object):
             raise Exception('message type S {0} not implemented'.format(tokens[4]))
 
 
-def generate_order_id():
+
+def generate_order_id(strategy_code = '10'):
     """
     :return:order id string
     """
-    order_number = 0
-    global time_stamp
-    current_time_stamp = '{:%H%M%S}'.format(datetime.datetime.now())
-    if current_time_stamp != time_stamp:
-        order_number = 0
-        time_stamp = current_time_stamp
-    else:
-        order_number += 1
-    if order_number < 10:
-        ord_num_str = '00' + str(order_number)
-    elif order_number < 100:
-        ord_num_str = '0' + str(order_number)
-    else:
-        ord_num_str = str(order_number)
-    time.sleep(.1)
-    return '{:%H%M%S}'.format(datetime.datetime.now()) + ord_num_str
+    global order_number
+
+    order_number += 1
+    if order_number == 2000000:
+        order_number = 1000000
+
+    return '{0}{1}'.format(strategy_code, order_number)
+
 
 
 def generate_limit_order(qty, symbol, price, acct):
@@ -387,3 +385,5 @@ def generate_stop_market_order(qty, symbol, stop_price, acct):
 #
 #
 # print(o)
+
+
