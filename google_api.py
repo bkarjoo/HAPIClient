@@ -100,7 +100,7 @@ def get_sheet():
     #     for row in values:
     #         # Print columns A and E, which correspond to indices 0 and 4.
     #         print('%s, %s' % (row[0], row[4]))
-    rangeName = 'Today Trading List!A2:N'
+    rangeName = 'Today Trading List!A1:L'
     result = service.spreadsheets().values().get(
         spreadsheetId = spreadsheetId, range = rangeName
     ).execute()
