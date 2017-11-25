@@ -1,6 +1,5 @@
 import socket
 import Queue
-import threading
 from orders import *
 from hydra_message_utility_functions import *
 

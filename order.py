@@ -1,11 +1,23 @@
 import datetime
 import time
-from observer import Observable
-# single object which sends orders and cancels orders
-# by submitting the proper message to the exchange
+from observer import *
 
 time_stamp = ''
 order_number = 100
+
+
+def generate_order_id():
+    """
+    :return:order id string
+    """
+    global order_number
+
+    order_number += 1
+    if order_number == 999:
+        order_number = 100
+    # slowing this so not more than 500 orders are generated per second
+    time.sleep(.0015)
+    return '{:%H%M%S}{}'.format(datetime.datetime.now(),order_number)
 
 
 class tif_type:
@@ -62,7 +74,7 @@ class msg_status_type:
 
 class order_status_type:
     submitting = 0
-    acknowledged = 1 # acknowledged by hydra, but not the exchange
+    acknowledged = 1  # acknowledged by hydra, but not the exchange
     open = 2
     canceled = 3
     rejected = 4
@@ -71,10 +83,12 @@ class order_status_type:
     executed = 7
 
 
-class order(Observable):
+class Order(object):
+
     def __init__(self):
+        self.statusChangeNotifier = Order.StatusChangeNotifier(self)
         self.account = ''
-        self.parrent_id = ''
+        self.parent_id = ''
         self.order_id = ''
         self.operation = operation_type.none
         self.symbol = ''
@@ -99,7 +113,6 @@ class order(Observable):
         self.status = order_status_type.submitting
         self.error = ''
         self.leaves_qty = 0
-        self.change_notifier = order.ChangeNotifier(self)
 
     def __str__(self):
         return self.craft_message()
@@ -109,7 +122,7 @@ class order(Observable):
 
     def craft_message(self):
         return "#:00000:N:000:{0}:{1}:{2}:N:{3}:{4}:{5}:{6}:{7}:{8}:{9}::{10}::{11}:{18}:{13}:{12}:{14}:{15}:{16}:{17}::::*".format(
-            self.account, self.parrent_id, self.order_id, self.symbol, self.side,
+            self.account, self.parent_id, self.order_id, self.symbol, self.side,
             self.quantity, self.order_price, self.contra, self.channel_of_execution,
             self.tif, self.type, self.display, self.cancel_replace_id,
             self.reserve_size, self.ticket_id, self.algo_fields, self.security_type,
@@ -117,14 +130,13 @@ class order(Observable):
 
     def craft_cancel_message(self):
         return "#:00000:N:000:{0}::{2}:C:{3}:{4}:{5}:{6}::{8}:{9}::{10}::{11}:*".format(
-            self.account, self.parrent_id, self.order_id, self.symbol, self.side,
+            self.account, self.parent_id, self.order_id, self.symbol, self.side,
             self.quantity, self.order_price, self.contra, self.channel_of_execution,
             self.tif, self.type, self.display)
 
-
     def change_status(self, stat):
         self.status = stat
-        self.change_notifier.notifyObservers()
+        self.statusChangeNotifier.notifyObservers(stat)
 
     def update_order(self, tokens):
         if tokens[2] != 'S':
@@ -165,43 +177,28 @@ class order(Observable):
         else:
             raise Exception('message type S {0} not implemented'.format(tokens[4]))
 
-    class ChangeNotifier(Observable):
+    class StatusChangeNotifier(Observable):
+
         def __init__(self, outer):
             Observable.__init__(self)
             self.outer = outer
 
-        def notifyObserver(self):
+        def notifyObservers(self, arg=None):
             self.setChanged()
-            Observable.notifyObservers(self)
-
-
-
-def generate_order_id():
-    """
-    :return:order id string
-    """
-    global order_number
-
-    order_number += 1
-    if order_number == 999:
-        order_number = 100
-    # slowing this so not more than 500 orders are generated per second
-    time.sleep(.0015)
-    return '{:%H%M%S}{}'.format(datetime.datetime.now(),order_number)
-
+            Observable.notifyObservers(self, arg)
 
 
 def generate_limit_order(qty, symbol, price, acct):
     if type(qty) != int:
         qty = int(qty)
-    o = order()
+    o = Order()
     o.account = acct
     o.quantity = abs(qty)
     o.symbol = symbol
     o.order_price = price
     o.tif = tif_type.day
     o.type = order_type.limit
-    o.parrent_id = generate_order_id()
+    o.parent_id = generate_order_id()
     o.display = 'Y'
     o.algo_fields = '4A,,,,,'
     o.security_type = '8'
@@ -217,13 +214,13 @@ def generate_limit_order(qty, symbol, price, acct):
 def generate_opg_market_order(qty, symbol, acct):
     if type(qty) != int:
         qty = int(qty)
-    o = order()
+    o = Order()
     o.account = acct
     o.quantity = abs(qty)
     o.symbol = symbol
     o.tif = tif_type.opg
     o.type = order_type.market
-    o.parrent_id = generate_order_id()
+    o.parent_id = generate_order_id()
     o.display = 'Y'
     o.algo_fields = '9,,,,,'
     o.security_type = '8'
@@ -239,13 +236,13 @@ def generate_opg_market_order(qty, symbol, acct):
 def generate_moc_market_order(qty, symbol, acct):
     if type(qty) != int:
         qty = int(qty)
-    o = order()
+    o = Order()
     o.account = acct
     o.quantity = abs(qty)
     o.symbol = symbol
     o.tif = tif_type.day
     o.type = order_type.moc
-    o.parrent_id = generate_order_id()
+    o.parent_id = generate_order_id()
     o.display = 'Y'
     o.algo_fields = '9,,,,,'
     o.security_type = '8'
@@ -261,13 +258,13 @@ def generate_moc_market_order(qty, symbol, acct):
 def generate_opg_limit_order(qty, symbol, price, acct):
     if type(qty) != int:
         qty = int(qty)
-    o = order()
+    o = Order()
     o.account = acct
     o.quantity = abs(qty)
     o.symbol = symbol
     o.tif = tif_type.opg
     o.type = order_type.limit
-    o.parrent_id = generate_order_id()
+    o.parent_id = generate_order_id()
     o.display = 'Y'
     o.algo_fields = '9,,,,,'
     o.security_type = '8'
@@ -284,13 +281,13 @@ def generate_opg_limit_order(qty, symbol, price, acct):
 def generate_loc_limit_order(qty, symbol, price, acct):
     if type(qty) != int:
         qty = int(qty)
-    o = order()
+    o = Order()
     o.account = acct
     o.quantity = abs(qty)
     o.symbol = symbol
     o.tif = tif_type.day
     o.type = order_type.loc
-    o.parrent_id = generate_order_id()
+    o.parent_id = generate_order_id()
     o.display = 'Y'
     o.algo_fields = '9,,,,,'
     o.security_type = '8'
@@ -307,13 +304,13 @@ def generate_loc_limit_order(qty, symbol, price, acct):
 def generate_nite_vwap_order(qty, symbol, start_time, end_time, stop_price, acct):
     if type(qty) != int:
         qty = int(qty)
-    o = order()
+    o = Order()
     o.account = acct
     o.quantity = abs(qty)
     o.symbol = symbol
     o.tif = tif_type.day
     o.type = order_type.market
-    o.parrent_id = generate_order_id()
+    o.parent_id = generate_order_id()
     o.display = 'Y'
     o.set_nite_vwap(start_time, end_time, stop_price)
     o.security_type = '8'
@@ -330,7 +327,7 @@ def generate_nite_vwap_order(qty, symbol, start_time, end_time, stop_price, acct
 def generate_stop_limit_order(qty, symbol, stop_price, stop_limit, acct):
     if type(qty) != int:
         qty = int(qty)
-    o = order()
+    o = Order()
     o.account = acct
     o.quantity = abs(qty)
     o.symbol = symbol
@@ -338,7 +335,7 @@ def generate_stop_limit_order(qty, symbol, stop_price, stop_limit, acct):
     o.stop_limit_price = stop_limit
     o.tif = tif_type.day
     o.type = order_type.stop
-    o.parrent_id = generate_order_id()
+    o.parent_id = generate_order_id()
     o.display = 'Y'
     o.algo_fields = '9,,,,,'
     o.security_type = '8'
@@ -354,14 +351,14 @@ def generate_stop_limit_order(qty, symbol, stop_price, stop_limit, acct):
 def generate_stop_market_order(qty, symbol, stop_price, acct):
     if type(qty) != int:
         qty = int(qty)
-    o = order()
+    o = Order()
     o.account = acct
     o.quantity = abs(qty)
     o.symbol = symbol
     o.order_price = stop_price
     o.tif = tif_type.day
     o.type = order_type.stop
-    o.parrent_id = generate_order_id()
+    o.parent_id = generate_order_id()
     o.display = 'Y'
     o.algo_fields = '9,,,,,'
     o.security_type = '8'
@@ -374,7 +371,7 @@ def generate_stop_market_order(qty, symbol, stop_price, acct):
     return o
 
 
-# o = order()
+# o = Order()
 # o.account = 'ALGOGROUP'
 # o.parrent_id = '6'
 # o.symbol = 'MU'
