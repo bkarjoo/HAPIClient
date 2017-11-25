@@ -1,9 +1,11 @@
+import datetime
+import time
 from observer import Observable
 # single object which sends orders and cancels orders
 # by submitting the proper message to the exchange
 
 time_stamp = ''
-order_number = 1000000
+order_number = 100
 
 
 class tif_type:
@@ -97,8 +99,6 @@ class order(Observable):
         self.status = order_status_type.submitting
         self.error = ''
         self.leaves_qty = 0
-        self.strategy = '' # order can have a strategy name
-        self.strategy_code = '00' # 2 character code allows for many concurrent strategies
         self.change_notifier = order.ChangeNotifier(self)
 
     def __str__(self):
@@ -176,17 +176,18 @@ class order(Observable):
 
 
 
-def generate_order_id(strategy_code = '10'):
+def generate_order_id():
     """
     :return:order id string
     """
     global order_number
 
     order_number += 1
-    if order_number == 2000000:
-        order_number = 1000000
-
-    return '{0}{1}'.format(strategy_code, order_number)
+    if order_number == 999:
+        order_number = 100
+    # slowing this so not more than 500 orders are generated per second
+    time.sleep(.0015)
+    return '{:%H%M%S}{}'.format(datetime.datetime.now(),order_number)
 
 
 
@@ -398,5 +399,8 @@ def generate_stop_market_order(qty, symbol, stop_price, acct):
 #
 #
 # print(o)
+
+
+
 
 

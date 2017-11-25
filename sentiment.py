@@ -2,15 +2,18 @@ from quote import *
 from order import *
 
 class SentimentStrategy(object):
-    def __init__(self, quote, order_submiter):
+    def __init__(self, symbol, quote, order_submiter):
         self.entry_order = 0
         self.stop_order = 0
         self.vwap_order = 0
         self.sender = order_submiter
         self.strategy_timer()
+        q.ChangeNotifier.addObserver(self.quote_changed())
 
     def place_entry_order(self, arg_list):
         # args are sent from excel sheet
+        self.entry_order = generate_opg_limit_order()
+
         pass
 
     def place_stop_order(self):
@@ -36,3 +39,10 @@ class SentimentStrategy(object):
         # cancel stop at 9:44:50
         # stop running after this
         pass
+
+    def quote_changed(self):
+        pass
+
+q = Quote('SPY')
+ss = SentimentStrategy('SPY',q,0)
+

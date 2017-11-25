@@ -101,6 +101,9 @@ class Quote():
     def set_vwap_exchange(self, value):
         self.vwap_exchange = value
 
+    def get_symbol(self):
+        return self.symbol
+
     def get_last_str(self):
         return self.last
 
@@ -218,7 +221,6 @@ class Quote():
             self.outer = outer
 
         def notifyObservers(self):
-            self.setChanged()
-            Observable.notifyObservers(self)
+            Observable.notifyObservers(self, self.outer)
 
 
