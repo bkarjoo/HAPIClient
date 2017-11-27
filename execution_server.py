@@ -134,7 +134,7 @@ def sell(cmd):
         qty = int(values[1])
         # -qty means sell
         qty = qty * -1
-        o = order()
+        o = Order()
         acct = 'ALGOGROUP'
         if values[3].upper() == 'MOO':
             if len(values) == 5:
@@ -191,7 +191,7 @@ def buy(command):
         """buy 100 XYZ VWAP 23.5 * 1.01 stop (ALGOGROUP)"""
         values = command.split(' ')
 
-        o = order()
+        o = Order()
         acct = 'ALGOGROUP'
         if len(values) == 4: values.append(acct)
         if values[3].upper() == 'MOO':
@@ -231,7 +231,7 @@ def buy(command):
                 acct = values[7]
             o = generate_stop_limit_order(values[1], values[2], values[3], values[5], acct)
 
-        add_order_by_parent(o.parrent_id, o)
+        add_order_by_parent(o.parent_id, o)
 
         hydra_order_message = o.craft_message()
         hydra_order_message = add_length(hydra_order_message)

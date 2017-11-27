@@ -9,6 +9,8 @@ class Strategy:
         self.quoteObserver = Strategy.QuoteObserver(self)
         self.askObserver = Strategy.AskObserver(self)
         self.orderStatusObserver = Strategy.OrderStatusObserver(self)
+        self.quoteManager = QuoteManager()
+        self.executionManager = ExecutionManager()
 
     def add_quote(self, quote):
         quote.changeNotifier.addObserver(self.quoteObserver)

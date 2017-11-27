@@ -2,6 +2,7 @@ import socket
 import Queue
 import threading
 from quotes import *
+from quote_updater import *
 from hydra_message_utility_functions import *
 
 is_sock = 0
@@ -11,6 +12,7 @@ is_msg_store = 0
 is_msg_count = 0
 is_listener_thread = 0
 is_processor_thread = 0
+quotes = Quotes()
 
 is_quit_program = False
 
@@ -33,69 +35,9 @@ def is_msg_handler(msg):
     is_msg_count += 1
     is_msg_store.append(msg)
     tokens = msg.split(':')
-    # tokens[2] is message type
-    # tokens[4] is symbol
-    if tokens[2] == 'A':
-        q = get_quote_object(tokens[4])
-        q.set_ask(tokens[5])
-        q.set_ask_size(tokens[6])
-        q.set_tick_val(tokens[7])
-    elif tokens[2] == 'B':
-        q = get_quote_object(tokens[4])
-        q.set_bid(tokens[5])
-        q.set_bid_size(tokens[6])
-        q.set_tick_val(tokens[7])
-    elif tokens[2] == 'J':
-        q = get_quote_object(tokens[4])
-        q.set_last(tokens[5])
-        q.set_last_size(tokens[6])
-    elif tokens[2] == 'C':
-        q = get_quote_object(tokens[4])
-        q.set_bid(tokens[5])
-        q.set_bid_size(tokens[6])
-        q.set_ask(tokens[7])
-        q.set_ask_size(tokens[8])
-        q.set_tick_val(tokens[9])
-    elif tokens[2] == 'D':
-        q = get_quote_object(tokens[4])
-        q.set_high(tokens[5])
-    elif tokens[2] == 'K':
-        q = get_quote_object(tokens[4])
-        q.set_low(tokens[5])
-    elif tokens[2] == 'F':
-        q = get_quote_object(tokens[4])
-        q.set_open(tokens[5])
-    elif tokens[2] == 'G':
-        q = get_quote_object(tokens[4])
-        q.set_previous_close(tokens[5])
-    elif tokens[2] == 'H':
-        q = get_quote_object(tokens[4])
-        q.set_volume(tokens[5])
-    elif tokens[2] == 'V':
-        q = get_quote_object(tokens[4])
-        q.set_vwap(tokens[5])
-        q.set_vwap_exchange(tokens[6])
-        q.set_vwap_10(tokens[7])
-    elif tokens[2] == 'N':
-        q = get_quote_object(tokens[4])
-        q.set_unofficial_close(tokens[5])
-    elif tokens[2] == '1':
-        # level 1 data
-        q = get_quote_object(tokens[4])
-        q.set_last(tokens[5])
-        q.set_bid(tokens[6])
-        q.set_bid_size(tokens[7])
-        q.set_ask(tokens[8])
-        q.set_ask_size(tokens[9])
-        q.set_high(tokens[10])
-        q.set_low(tokens[11])
-        q.set_volume(tokens[12])
-        q.set_open(tokens[13])
-        q.set_previous_close(tokens[14])
-        q.set_tick_val(tokens[15])
-        q.set_news(tokens[16])
-        q.set_vwap(tokens[17])
-        q.set_vwap_10(tokens[18])
+    quote = get_quote_object(tokens[4])
+    update_quote(quote, tokens)
+
 
 
 def is_socket_listener():
@@ -151,7 +93,6 @@ def is_initialize():
     is_sock.connect(is_server_address)
     global is_msg_store
     is_msg_store = list()
-    initialize_quotes()
     global is_listener_thread
     is_listener_thread = threading.Thread(target=is_socket_listener)
     is_listener_thread.start()
@@ -174,8 +115,8 @@ def is_submit_dialogue():
 
 def start_quote(command):
     # sends a request to start a quote subscription
-    # kill command will then kill a quote if it exists
     # e.g. quote SPY
+
     tokens = command.split(' ')
     symbol = tokens[2].strip()
     message = '#:00000:1:000:{0}:A:*'.format(symbol)
