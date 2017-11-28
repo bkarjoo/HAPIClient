@@ -34,6 +34,8 @@ def update_quote(q, tokens):
         q.set_unofficial_close(tokens[5])
     elif tokens[2] == '1':
         # level 1 data
+        if len(tokens) < 19: return
+        print tokens
         q.set_last(tokens[5])
         q.set_bid(tokens[6])
         q.set_bid_size(tokens[7])

@@ -1,15 +1,17 @@
 from observer import *
 from quote import Quote
 from order import Order
+from quote_manager import QuoteManager
+from execution_manager import ExecutionManager
 
 
 class Strategy:
-    def __init__(self, name):
+    def __init__(self, name, quote_manager):
         self.name = name
         self.quoteObserver = Strategy.QuoteObserver(self)
         self.askObserver = Strategy.AskObserver(self)
         self.orderStatusObserver = Strategy.OrderStatusObserver(self)
-        self.quoteManager = QuoteManager()
+        self.quoteManager = quote_manager
         self.executionManager = ExecutionManager()
 
     def add_quote(self, quote):

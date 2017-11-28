@@ -1,5 +1,6 @@
 import socket
 import Queue
+import time
 import threading
 from quotes import *
 from quote_updater import *
@@ -38,33 +39,33 @@ class HAPIInformationServer(object):
     def is_socket_listener(self):
         while True:
             try:
-                is_sock.settimeout(1)
-                header = is_sock.recv(13)
+                self.is_sock.settimeout(1)
+                header = self.is_sock.recv(13)
                 if len(header) > 0:
                     toks = header.split(':')
                     length = int(toks[3]) - 13
-                    remainder = is_sock.recv(length)
+                    remainder = self.is_sock.recv(length)
                     whole_message = header + remainder
                     self.is_queue.put(whole_message)
             except socket.timeout:
                 if self.is_quit_program:
-                    is_sock.close()
+                    self.is_sock.close()
                     break
             except:
                 if self.is_quit_program:
-                    is_sock.close()
+                    self.is_sock.close()
                     break
             finally:
                 if self.is_quit_program:
-                    is_sock.close()
+                    self.is_sock.close()
                     break
 
     def is_queue_processor(self):
         while True:
             try:
-                msg = is_queue.get(block=True, timeout=1)
+                msg = self.is_queue.get(block=True, timeout=1)
                 self.is_msg_handler(msg)
-                is_queue.task_done()
+                self.is_queue.task_done()
                 if self.is_quit_program:
                     break
             except Queue.Empty:
@@ -77,7 +78,10 @@ class HAPIInformationServer(object):
         self.is_sock.sendall(msg)
 
     def close_is_socket(self):
+        self.send_is_quit_message()
+        time.sleep(1)
         self.is_sock.close()
+        self.is_quit_program = True
         self.is_listener_thread.join()
         self.is_processor_thread.join()
 
