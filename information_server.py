@@ -22,22 +22,13 @@ def is_quit():
     is_quit_program = True
 
 
-def get_quote_object(symbol):
-    if symbol in quotes:
-        return quotes[symbol]
-    q = Quote(symbol)
-    quotes[symbol] = q
-    return q
-
-
 def is_msg_handler(msg):
     global is_msg_count
     is_msg_count += 1
     is_msg_store.append(msg)
     tokens = msg.split(':')
-    quote = get_quote_object(tokens[4])
+    quote = quotes.get_quote(tokens[4])
     update_quote(quote, tokens)
-
 
 
 def is_socket_listener():
@@ -113,20 +104,24 @@ def is_submit_dialogue():
     is_sock.sendall(message_to_submit)
 
 
-def start_quote(command):
+def start_quote(symbol):
     # sends a request to start a quote subscription
     # e.g. quote SPY
-
-    tokens = command.split(' ')
-    symbol = tokens[2].strip()
+    q = quotes.get_quote(symbol)
+    if q.is_live:
+        return
+    q.is_live = True
     message = '#:00000:1:000:{0}:A:*'.format(symbol)
     message = add_length(message)
     is_sock.sendall(message)
+    return q
 
 
-def stop_quote(command):
-    tokens = command.split(' ')
-    symbol = tokens[2].strip()
+def stop_quote(symbol):
+    q = quotes.get_quote(symbol)
+    if not q.is_live:
+        return
+    q.is_live = False
     message = '#:00000:1:000:{0}:R:*'.format(symbol)
     message = add_length(message)
     is_sock.sendall(message)

@@ -2,6 +2,10 @@ from observer import Observable
 
 
 class Quote:
+    """
+    quote object stores level 1 data for a particular stock
+    includes observer sub classes for notifying subscribers of changes in fields
+    """
 
     def __init__(self, symbol):
         self.changeNotifier = Quote.ChangeNotifier(self)
@@ -38,6 +42,7 @@ class Quote:
         self.vwapNotifier = Quote.VWAPNotifier(self)
         self.vwap_10 = ''
         self.vwap_exchange = ''
+        self.is_live = False
 
     def __str__(self):
         return 'symbol: {0}\nbid: {1}\nask: {2}\nbid size: {3}\nask size: {4}\nprevious close: {5}\nopen: {6}\nhigh: {7}\nlow: {8}\nlast: {9}\ntick val: {10}\nlast size: {11}\nunofficial close: {12}\nvolume: {13}\nnews: {14}\nvwap from open: {15}\nvwap 10 minute: {16}\nvwap exchange: {17}'.format(
@@ -60,9 +65,6 @@ class Quote:
             self.vwap_10,
             self.vwap_exchange
         )
-
-    def change(self):  # this is how to notify change
-        self.changeNotifier.notifyObservers()
 
     def set_last(self, value):
         self.last = value

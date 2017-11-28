@@ -2,22 +2,23 @@ import datetime
 import time
 from observer import *
 
-time_stamp = ''
-order_number = 100
 
+class OrderIdGenerator(object):
 
-def generate_order_id():
-    """
-    :return:order id string
-    """
-    global order_number
+    def __init__(self):
+        self.order_number = 100
 
-    order_number += 1
-    if order_number == 999:
-        order_number = 100
-    # slowing this so not more than 500 orders are generated per second
-    time.sleep(.0015)
-    return '{:%H%M%S}{}'.format(datetime.datetime.now(),order_number)
+    def generate_order_id(self):
+        """
+        :return:order id string
+        """
+
+        self.order_number += 1
+        if self.order_number == 999:
+            self.order_number = 100
+        # slowing this so not more than 500 orders are generated per second
+        time.sleep(.0015)
+        return '{:%H%M%S}{}'.format(datetime.datetime.now(), self.order_number)
 
 
 class tif_type:

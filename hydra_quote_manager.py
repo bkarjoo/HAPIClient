@@ -1,6 +1,7 @@
 from quote_manager import *
 from quote import Quote
 
+
 class HydraQuoteManager(QuoteManager):
     """
     adaptor class to connect to hydra
@@ -14,9 +15,8 @@ class HydraQuoteManager(QuoteManager):
         :param symbol:
         :return: the quote object
         """
-        q = self.iserver.get_quote_object(symbol)
+        q = self.iserver.start_quote(symbol)
         return q
 
-
     def stop_quote_stream(self, symbol):
-        pass
+        self.iserver.stop_quote(symbol)
