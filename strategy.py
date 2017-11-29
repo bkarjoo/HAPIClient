@@ -5,7 +5,7 @@ from quote_manager import QuoteManager
 from execution_manager import ExecutionManager
 
 
-class Strategy:
+class Strategy(object):
     def __init__(self, name, quote_manager):
         self.name = name
         self.quoteObserver = Strategy.QuoteObserver(self)
@@ -43,15 +43,15 @@ class Strategy:
             print 'ask updated {}'.format(arg)
 
 
-f = Quote('SPY')
-bee = Strategy('bebe')
-bee2 = Strategy('two')
-bee.add_quote(f)
-bee2.add_quote(f)
-f.change()
-f.set_ask('23.34')
-print f.get_ask()
-
-o = Order()
-bee.add_order(o)
-o.change_status('changed')
+# f = Quote('SPY')
+# bee = Strategy('bebe')
+# bee2 = Strategy('two')
+# bee.add_quote(f)
+# bee2.add_quote(f)
+# f.change()
+# f.set_ask('23.34')
+# print f.get_ask()
+#
+# o = Order()
+# bee.add_order(o)
+# o.change_status('changed')

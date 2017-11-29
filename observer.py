@@ -21,7 +21,8 @@ class Observable(Synchronization):
             self.obs.append(observer)
 
     def deleteObserver(self, observer):
-        self.obs.remove(observer)
+        if observer in self.obs:
+            self.obs.remove(observer)
 
     def notifyObservers(self, arg = None):
         '''If 'changed' indicates that this object

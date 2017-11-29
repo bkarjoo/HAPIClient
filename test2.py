@@ -18,3 +18,5 @@ time.sleep(1)
 ES.cancel_all_orders()
 ES.close_es_socket()
 print 'done'
+
+# all these details are hidden by the execution manager

@@ -22,3 +22,6 @@ time.sleep(1)
 print 'close socket'
 qm.close_socket()
 print 'done'
+
+# note open start stop , finally close
+# all open and close crucial in using the quote manager

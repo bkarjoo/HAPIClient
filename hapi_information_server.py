@@ -30,10 +30,12 @@ class HAPIInformationServer(object):
         self.is_quit_program = True
 
     def is_msg_handler(self, msg):
-        self.is_msg_count += 1
-        self.is_msg_store.append(msg)
+        # self.is_msg_count += 1
+        # self.is_msg_store.append(msg)
         tokens = msg.split(':')
         quote = self.quotes.get_quote(tokens[4])
+        if quote == None:
+            quote = self.quotes.add_quote(tokens[4])
         update_quote(quote, tokens)
 
     def is_socket_listener(self):
@@ -94,6 +96,8 @@ class HAPIInformationServer(object):
         # sends a request to start a quote subscription
         # e.g. quote SPY
         q = self.quotes.get_quote(symbol)
+        if q == None:
+            q = self.quotes.add_quote(symbol)
         if q.is_live:
             return
         q.is_live = True
@@ -106,10 +110,12 @@ class HAPIInformationServer(object):
         q = self.quotes.get_quote(symbol)
         if not q.is_live:
             return
-        q.is_live = False
-        message = '#:00000:1:000:{0}:R:*'.format(symbol)
-        message = add_length(message)
-        self.is_sock.sendall(message)
+        if not q.has_observers():
+            q.is_live = False
+            message = '#:00000:1:000:{0}:R:*'.format(symbol)
+            message = add_length(message)
+            self.is_sock.sendall(message)
+            self.quotes.delete_quote(symbol)
 
     def print_quote(self, command):
         tokens = command.split(' ')

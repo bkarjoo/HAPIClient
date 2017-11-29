@@ -21,3 +21,5 @@ time.sleep(1)
 print 'close socket'
 IS.close_is_socket()
 print 'done'
+
+# all these details are hidden by quote manager

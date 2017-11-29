@@ -1,3 +1,4 @@
+import threading
 from quote import Quote
 
 
@@ -7,7 +8,7 @@ class Quotes(dict):
     """
 
     def __init__(self):
-        pass
+        self.lock = threading.Lock()
 
     def get_quote(self, symbol):
         """
@@ -15,16 +16,29 @@ class Quotes(dict):
         :param symbol:
         :return: a quote object for the symbol
         """
-        if symbol in self:
-            return self[symbol]
+        q = None
+        with self.lock:
+            if symbol in self:
+                q = self[symbol]
 
-        q = Quote(symbol)
-        self[symbol] = q
         return q
 
+    def add_quote(self, symbol):
 
-# q = Quotes()
-# q.get_quote('IBM')
-# IBM = q.get_quote('IBM')
-# IBM.set_last(123)
-# print IBM
+        with self.lock:
+            if not symbol in self:
+                q = Quote(symbol)
+                self[symbol] = q
+
+        return q
+
+    def delete_quote(self, symbol):
+
+        with self.lock:
+            if symbol in self:
+                del self[symbol]
+
+    def count(self):
+        return len(self)
+
+

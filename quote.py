@@ -66,6 +66,29 @@ class Quote:
             self.vwap_exchange
         )
 
+    def has_observers(self):
+        if self.changeNotifier.countObservers() == 0\
+                and self.openNotifier.countObservers() == 0\
+                and self.askNotifier.countObservers() == 0\
+                and self.changeNotifier.countObservers() == 0\
+                and self.askSizeNotifier.countObservers() == 0\
+                and self.vwapNotifier.countObservers() == 0\
+                and self.volumeNotifier.countObservers() == 0\
+                and self.unofficialCloseNotifier.countObservers() == 0\
+                and self.tickValNotifier.countObservers() == 0\
+                and self.previousCloseNotifier.countObservers() == 0\
+                and self.newNotifier.countObservers() == 0\
+                and self.lowNotifier.countObservers() == 0\
+                and self.lastSizeNotifier.countObservers() == 0\
+                and self.lastNotifier.countObservers() == 0\
+                and self.highNotifier.countObservers() == 0\
+                and self.bidSizeNotifier.countObservers() ==0\
+                and self.bidNotifier.countObservers() == 0\
+                and self.openNotifier.countObservers() == 0:
+            return False
+
+        return True
+
     def set_last(self, value):
         self.last = value
         self.lastNotifier.notifyObservers(value)
