@@ -22,10 +22,10 @@ time.sleep(1)
 em.cancel_order(o)
 time.sleep(1)
 # 10 orders
-for i in range(0,99):
-    o = OF.sell('sell 100 NOK 5.2 day DEMOX1')
+for i in range(0,9):
+    o = OF.buy('sell 100 NOK 5.03 day DEMOX1')
     em.send_order(o)
-    time.sleep(.005)
+    time.sleep(.1)
 time.sleep(1)
 #em.cancel_all_orders()
 print 'done canceling'

@@ -13,4 +13,4 @@ class OrderIdGenerator(object):
         self.order_number += 1
         if self.order_number == 999:
             self.order_number = 100
-        return '{:%H%M%S}{}'.format(datetime.datetime.now(), self.order_number)
+        return int('{:%H%M%S}{}'.format(datetime.datetime.now(), self.order_number))

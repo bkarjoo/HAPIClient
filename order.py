@@ -3,9 +3,6 @@ import time
 from observer import *
 
 
-
-
-
 class tif_type:
     day = 'DAY'
     ioc = 'IOC'
@@ -96,6 +93,7 @@ class Order(object):
         self.is_submitted = False
         self.cancel_submitted = False
         self.executed_quantity = 0
+        self.execution_list = []
         self.status = order_status_type.submitting
         self.error = ''
         self.leaves_qty = 0
@@ -124,6 +122,14 @@ class Order(object):
         self.status = stat
         self.statusChangeNotifier.notifyObservers(stat)
 
+    def get_average_execution_price(self):
+        sum_of_shares = 0
+        sum_of_dollar_values = 0.0
+        for t in self.execution_list:
+            sum_of_shares += t[0]
+            sum_of_dollar_values += (t[0] * t[1])
+        return sum_of_dollar_values / sum_of_shares
+
     def update_order(self, tokens):
         if tokens[2] != 'S':
             raise Exception('invalid message type {0} sent to order.update_order'.format(tokens[2]))
@@ -135,6 +141,8 @@ class Order(object):
             elif tokens[14] == msg_status_type.executed:
                 # can be partial or full
                 self.executed_quantity += int(tokens[10])
+                t = (int(tokens[10]),float(tokens[11]))
+                self.execution_list.append(t)
                 self.leaves_qty = int(tokens[20])
                 if self.leaves_qty == 0:
                     self.change_status(order_status_type.executed)
@@ -173,10 +181,6 @@ class Order(object):
             self.setChanged()
             Observable.notifyObservers(self, arg)
 
-
-
-
-
 # o = Order()
 # o.account = 'ALGOGROUP'
 # o.parrent_id = '6'
@@ -202,8 +206,3 @@ class Order(object):
 #
 #
 # print(o)
-
-
-
-
-
