@@ -126,12 +126,15 @@ class HAPIExecutionServer(object):
 
     def cancel_all_orders(self):
         print len(self.orders.orders_by_id)
+        cancel_msgs = list()
         with self.orders.by_id_lock:
+
             for key, value in self.orders.orders_by_id.iteritems():
                 if value.status == order_status_type.open or value.status == order_status_type.partial_open:
                     cancel_msg = value.craft_cancel_message()
                     cancel_msg = add_length(cancel_msg)
-                    print cancel_msg
-                    self.es_sock.sendall(cancel_msg)
-                    time.sleep(.005)
+                    cancel_msgs.append(cancel_msg)
+        for m in cancel_msgs:
+            self.es_sock.sendall(m)
+            time.sleep(.15)
 

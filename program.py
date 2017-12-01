@@ -1,20 +1,18 @@
 import time
 from hapi_information_server import HAPIInformationServer
 from hapi_execution_server import HAPIExecutionServer
+from hydra_execution_manager import HydraExecutionManager
+from order_factory import OrderFactory
 
 #from google_sheet_dtp import *
 from hydra_quote_manager import HydraQuoteManager
 
-IS = 0
-ES = 0
+
+em = 0
+of = 0
 
 def quit():
-    ES.send_es_quit_message()
-    IS.send_is_quit_message()
-    ES.es_quit()
-    IS.is_quit()
-    ES.close_es_socket()
-    IS.close_is_socket()
+    em.close_socket()
     time.sleep(1)
 
 
@@ -27,9 +25,11 @@ def interactive():
                     quit()
                     return
                 elif command[:4] == 'sell':
-                    ES.sell(command)
+                    o = of.sell(command)
+                    em.send_order(o)
                 elif command[:3] == 'buy':
-                    ES.buy(command)
+                    o = of.buy(command)
+                    em.send_order(o)
                 elif command == 'submit':
                     ES.es_submit_dialogue()
                 elif command == 'sheet':
@@ -70,9 +70,8 @@ def interactive():
 
 
 if __name__ == "__main__":
-    IS = HAPIInformationServer()
-    ES = HAPIExecutionServer()
-    q = HydraQuoteManager()
+    em = HydraExecutionManager()
+    of = OrderFactory()
     interactive()
 
 
