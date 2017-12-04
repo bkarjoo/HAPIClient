@@ -3,16 +3,17 @@ from hapi_information_server import HAPIInformationServer
 from hapi_execution_server import HAPIExecutionServer
 from hydra_execution_manager import HydraExecutionManager
 from order_factory import OrderFactory
-
-#from google_sheet_dtp import *
+from google_sheet_dtp import *
 from hydra_quote_manager import HydraQuoteManager
 
 
 em = 0
 of = 0
+info_serve = 0
 
 def quit():
     em.close_socket()
+    info_serve.close_is_socket()
     time.sleep(1)
 
 
@@ -33,7 +34,8 @@ def interactive():
                 elif command == 'submit':
                     ES.es_submit_dialogue()
                 elif command == 'sheet':
-                    process_sheet()
+                    ggg = GoogleSheetDailyTradingProcedure()
+                    ggg.process_sheet()
                 elif command == 'pem':
                     for m in ES.es_msg_store:
                         print m
@@ -45,9 +47,9 @@ def interactive():
                 elif command == 'pimc':
                     print IS.is_msg_count
                 elif command[:11] == 'start quote':
-                    IS.start_quote(command.split(':')[2])
+                    info_serve.start_quote(command.split(' ')[2])
                 elif command[:10] == 'stop quote':
-                    IS.stop_quote(command.split(':')[2])
+                    info_serve.stop_quote(command.split(' ')[2])
                 # elif command == 'closing bracket orders':
                 #     closing_bracket_orders()
                 elif command[:11] == 'print quote':
@@ -65,14 +67,18 @@ def interactive():
                     tokens = command.split()
                     i = int(tokens[2])
                     process_row(get_row(i),i)
-            except:
-                print 'error in interactive'
+                elif command == 'tech':
+                    pass
+            except Exception as e:
+                print 'error in interactive', e
 
 
 if __name__ == "__main__":
     em = HydraExecutionManager()
     of = OrderFactory()
+    info_serve = HAPIInformationServer()
     interactive()
+
 
 
 

@@ -1,7 +1,7 @@
 from google_api import *
 
 class GoogleSheetDailyTradingProcedure(object):
-    def process_row(row, i = 0):
+    def process_row(self, row, i = 0):
         if (len(row) >= 9):
             strategy = str(row[0]).upper().strip()
             account = str(row[1]).upper().strip()
@@ -21,7 +21,7 @@ class GoogleSheetDailyTradingProcedure(object):
                 exit_strategy
             )
 
-            return
+
             if strategy == 'SENTIMENT':
                 # place opening orders
                 try:
@@ -99,13 +99,15 @@ class GoogleSheetDailyTradingProcedure(object):
                 pass
             elif strategy == 'CORP ACTION':
                 pass
+            elif strategy == 'Tax':
+                pass
 
-    def process_sheet(confirm = True):
+    def process_sheet(self, confirm = True):
         sheet = get_sheet()
         i = 1
         for row in sheet:
             i += 1
-            process_row(row, i)
+            self.process_row(row, i)
 
     def get_row(self, row_number):
         sheet = get_sheet()

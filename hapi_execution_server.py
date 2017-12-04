@@ -93,7 +93,8 @@ class HAPIExecutionServer(object):
 
     def send_es_quit_message(self):
         # sends quit message to ES server
-        msg = '#:00000:0:018:QUIT'
+        #msg = '#:00000:0:018:QUIT'
+        msg = 'QUIT'
         self.es_sock.sendall(msg)
 
     def close_es_socket(self):

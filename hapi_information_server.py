@@ -76,7 +76,7 @@ class HAPIInformationServer(object):
 
     def send_is_quit_message(self):
         # sends quit message to IS server
-        msg = '#:00000:0:018:QUIT'
+        msg = 'QUIT'
         self.is_sock.sendall(msg)
 
     def close_is_socket(self):
