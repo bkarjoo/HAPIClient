@@ -18,3 +18,6 @@ class QuoteManager(object):
 
     def stop_quote_stream(self, symbol):
         pass
+
+    def get_quote(self, symbol):
+        pass

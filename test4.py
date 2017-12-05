@@ -4,6 +4,7 @@ test using Execution Manager
 import time
 from hydra_execution_manager import HydraExecutionManager
 from order_factory import OrderFactory
+
 em = HydraExecutionManager(False)
 em.open_socket()
 OF = OrderFactory()

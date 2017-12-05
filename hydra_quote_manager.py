@@ -30,4 +30,4 @@ class HydraQuoteManager(QuoteManager):
 
     def close_socket(self):
         self.iserver.close_is_socket()
-        self.iserver = 0
+        self.iserver = 0 

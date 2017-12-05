@@ -34,7 +34,7 @@ def interactive():
                 elif command == 'submit':
                     ES.es_submit_dialogue()
                 elif command == 'sheet':
-                    ggg = GoogleSheetDailyTradingProcedure()
+                    ggg = GoogleSheetDailyTradingProcedure(of,em)
                     ggg.process_sheet()
                 elif command == 'pem':
                     for m in ES.es_msg_store:
